@@ -19,7 +19,7 @@ from Readers.data_provider import DataProvider
 from CNN.conv_network import CNN
 
 
-def start_learning(learning_rate=0.1, n_epochs=20,
+def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20,
                     n_kerns=(10, 15, 20, 20), batch_size=128):
     """ Demonstrates lenet on MNIST dataset
 
@@ -94,27 +94,22 @@ def start_learning(learning_rate=0.1, n_epochs=20,
         }
     )
 
-    # create a list of gradients for all model parameters
-    grads = T.grad(cost, cnn.params)
-
     # train_model is a function that updates the model parameters by
     # SGD Since this model has many parameters, it would be tedious to
     # manually create an update rule for each model parameter. We thus
     # create the updates list by automatically looping over all
     # (params[i], grads[i]) pairs.
 
-    updates = [(param_i, param_i - learning_rate * grad_i)
-               for param_i, grad_i in zip(cnn.params, grads)]
-
-    train_model = theano.function([x, y], cost, updates=updates)
+    train_model = theano.function([x, y], cost, updates=cnn.gradient_updates_momentum(cost,  learning_rate, momentum))
 
     ###############
     # TRAIN MODEL #
     ###############
-
-    #f = open('model_v4.bin', 'rb')
-    #cnn.__setstate__(cPickle.load(f))
-    #f.close()
+    if os.path.isfile('model.bin') and use_model:
+        print 'using erlier model'
+        f = open('model.bin', 'rb')
+        cnn.__setstate__(cPickle.load(f))
+        f.close()
     print '... training'
     n_train_batches = dp.get_number_of_batches()
     # early-stopping parameters
