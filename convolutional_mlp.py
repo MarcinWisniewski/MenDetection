@@ -20,7 +20,7 @@ from CNN.conv_network import CNN
 
 
 def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20,
-                    n_kerns=(10, 15, 20, 20), batch_size=128):
+                    n_kerns=(15, 20, 20, 30, 10), batch_size=128):
     """ Demonstrates lenet on MNIST dataset
 
     :type learning_rate: float
@@ -46,9 +46,12 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
     dp = DataProvider(
         input_dir_person='/home/marcin/data/men_detection/men',
         input_dir_background='/home/marcin/data/men_detection/mountains',
-        test_percentage_split=5, validate_percentage_split=5, batch=batch_size)
+        test_percentage_split=2, validate_percentage_split=2, batch=batch_size)
     valid_set_x, valid_set_y = dp.get_validate_images()
     test_set_x, test_set_y = dp.get_testing_images()
+
+    print 'Number of validation examples: ', len(valid_set_x)
+    print 'Number of test examples: ', len(test_set_x)
 
     n_valid_batches = len(valid_set_x)/batch_size - 1
     n_test_batches = len(test_set_x)/batch_size - 1
@@ -59,13 +62,11 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
     test_set_x = theano.shared(numpy.asarray(test_set_x, dtype=theano.config.floatX), borrow=True)
     test_set_y = theano.shared(numpy.asarray(test_set_y, dtype='int8'), borrow=True)
 
-
-
     # start-snippet-1
     index = T.lscalar('index')
     x = T.tensor4('x', dtype=theano.config.floatX)   # the data is presented as rasterized images
     y = T.vector('y', dtype='int8')  # the labels are presented as 1D vector of
-                        # [int] labels
+                                     # [int] labels
 
     ######################
     # BUILD ACTUAL MODEL #
@@ -73,7 +74,7 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
     print '... building the model'
     cnn = CNN(rng, x, n_kerns, batch_size)
     # the cost we minimize during training is the NLL of the model
-    cost = cnn.layer5.negative_log_likelihood(y)
+    cost = cnn.layer6.negative_log_likelihood(y)
 
     # create a function to compute the mistakes that are made by the model
     test_model = theano.function(
@@ -194,5 +195,5 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
                           ' ran for %.2fm' % ((end_time - start_time) / 60.))
 
 if __name__ == '__main__':
-    start_learning()
+    start_learning(use_model=False)
 
