@@ -17,15 +17,15 @@ class CNN(object):
         # maxpooling reduces this further to (248/2, 248/2) = (124, 124)
         # 4D output tensor is thus of shape (batch_size, nkerns[0], 124, 124)
 
-        self.layer0_pooling_factor = (2, 2)
-        self.layer0_filter_shape = (n_kerns[0], 3, 9, 9)
-        print 'layer 0 input: ', (batch_size, 3, 256, 256)
+        self.layer0_stride = (4, 4)
+        self.layer0_filter_shape = (n_kerns[0], 3, 11, 11)
+        print 'layer 0 input: ', (batch_size, 3, 233, 233)
         self.layer0 = LeNetConvPoolLayer(
             rng,
             input=self.layer0_input,
-            image_shape=(batch_size, 3, 256, 256),
+            image_shape=(batch_size, 3, 233, 233),
             filter_shape=self.layer0_filter_shape,
-            poolsize=self.layer0_pooling_factor
+            strides=self.layer0_stride
         )
 
         # Construct the second convolutional pooling layer
@@ -34,7 +34,7 @@ class CNN(object):
         # 4D output tensor is thus of shape (batch_size, nkerns[1], 60, 60)
         self.layer1_pooling_factor = (2, 2)
         self.layer1_filter_shape = (n_kerns[1], n_kerns[0], 5, 5)
-        self.layer1_input_shape = (batch_size, n_kerns[0], 124, 124)
+        self.layer1_input_shape = (batch_size, n_kerns[0], 55, 55)
         print 'layer 1 input: ', self.layer1_input_shape
         self.layer1 = LeNetConvPoolLayer(
             rng,
@@ -49,8 +49,8 @@ class CNN(object):
         # maxpooling reduces this further to (56/2, 56/2) = (28, 28)
         # 4D output tensor is thus of shape (batch_size, nkerns[2], 28, 28)
         self.layer2_pooling_factor = (2, 2)
-        self.layer2_filter_shape = (n_kerns[2], n_kerns[1], 5, 5)
-        self.layer2_input_shape = (batch_size, n_kerns[1], 60, 60)
+        self.layer2_filter_shape = (n_kerns[2], n_kerns[1], 3, 3)
+        self.layer2_input_shape = (batch_size, n_kerns[1], 25, 25)
         print 'layer 2 input: ', self.layer2_input_shape
         self.layer2 = LeNetConvPoolLayer(
             rng,
@@ -64,9 +64,9 @@ class CNN(object):
         # filtering reduces the image size to (28-5+1, 28-5+1) = (24, 24)
         # maxpooling reduces this further to (24/2, 24/2) = (12, 12)
         # 4D output tensor is thus of shape (batch_size, nkerns[3], 13, 13)
-        self.layer3_pooling_factor = (2, 2)
+        self.layer3_pooling_factor = (1, 1)
         self.layer3_filter_shape = (n_kerns[3], n_kerns[2], 3, 3)
-        self.layer3_input_shape = (batch_size, n_kerns[2], 28, 28)
+        self.layer3_input_shape = (batch_size, n_kerns[2], 11, 11)
         print 'layer 3 input: ', self.layer3_input_shape
         self.layer3 = LeNetConvPoolLayer(
             rng,
@@ -82,7 +82,7 @@ class CNN(object):
         # 4D output tensor is thus of shape (batch_size, nkerns[4], 5, 5)
         self.layer4_pooling_factor = (2, 2)
         self.layer4_filter_shape = (n_kerns[4], n_kerns[3], 3, 3)
-        self.layer4_input_shape = (batch_size, n_kerns[3], 13, 13)
+        self.layer4_input_shape = (batch_size, n_kerns[3], 9, 9)
         print 'layer 4 input: ', self.layer4_input_shape
         self.layer4 = LeNetConvPoolLayer(
             rng,
@@ -97,8 +97,8 @@ class CNN(object):
         # This will generate a matrix of shape (batch_size, nkerns[4] * 5 * 5),
         # or (500, 50 * 4 * 4) = (500, 800) with the default values.
         self.layer5_input = self.layer4.output.flatten(2)
-        self.layer5_input_length = n_kerns[4] * 5 * 5
-        self.layer5_output_length = self.layer5_input_length / 5
+        self.layer5_input_length = n_kerns[4] * 7 * 7
+        self.layer5_output_length = 2048
         print 'layer 5 input: ', self.layer5_input_length
         print 'layer 5 output: ', self.layer5_output_length
         # construct a fully-connected sigmoidal layer
@@ -110,18 +110,36 @@ class CNN(object):
             activation=T.tanh
         )
 
-        # classify the values of the fully-connected sigmoidal layer
+        # the HiddenLayer being fully-connected
+        self.layer6_input = self.layer5.output
         self.layer6_input_length = self.layer5_output_length
+        self.layer6_output_length = 2048
         print 'layer 6 input: ', self.layer6_input_length
-        self.layer6 = LogisticRegression(input=self.layer5.output,
-                                         n_in=self.layer6_input_length,
+        print 'layer 6 output: ', self.layer6_output_length
+        # construct a fully-connected sigmoidal layer
+        self.layer6 = HiddenLayer(
+            rng,
+            input=self.layer6_input,
+            n_in=self.layer6_input_length,
+            n_out=self.layer6_output_length,
+            activation=T.tanh
+        )
+
+
+        # classify the values of the fully-connected sigmoidal layer
+        self.layer7_input_length = self.layer6_output_length
+        print 'layer 7 input: ', self.layer7_input_length
+        self.layer7 = LogisticRegression(input=self.layer6.output,
+                                         n_in=self.layer7_input_length,
                                          n_out=2)
 
-        self.errors = self.layer6.errors
+        self.errors = self.layer7.errors
 
         # create a list of all model parameters to be fit by gradient descent
-        self.params = self.layer6.params + self.layer5.params + self.layer4.params + self.layer3.params + \
-                      self.layer2.params + self.layer1.params + self.layer0.params
+        self.params = self.layer7.params + self.layer6.params + \
+                      self.layer5.params + self.layer4.params + \
+                      self.layer3.params + self.layer2.params + \
+                      self.layer1.params + self.layer0.params
 
     def __getstate__(self):
         weights = [parameter.get_value() for parameter in self.params]

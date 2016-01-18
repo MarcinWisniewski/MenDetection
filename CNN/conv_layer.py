@@ -9,7 +9,7 @@ from theano.tensor.nnet import conv
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
 
-    def __init__(self, rng, input, filter_shape, image_shape, poolsize=(2, 2)):
+    def __init__(self, rng, input, filter_shape, image_shape, poolsize=(2, 2), strides=(1, 1)):
         """
         Allocate a LeNetConvPoolLayer with shared variable internal parameters.
 
@@ -29,6 +29,9 @@ class LeNetConvPoolLayer(object):
 
         :type poolsize: tuple or list of length 2
         :param poolsize: the downsampling (pooling) factor (#rows, #cols)
+
+        :type strides: tuple of length 2
+        :param strides: the subsampling of convolutoion (#rows, #cols)
         """
 
         assert image_shape[1] == filter_shape[1]
@@ -58,7 +61,8 @@ class LeNetConvPoolLayer(object):
             input=input,
             filters=self.W,
             filter_shape=filter_shape,
-            image_shape=image_shape
+            image_shape=image_shape,
+            subsample=strides
         )
 
         # downsample each feature map individually, using maxpooling

@@ -20,7 +20,7 @@ from CNN.conv_network import CNN
 
 
 def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20,
-                    n_kerns=(15, 20, 20, 30, 10), batch_size=128):
+                    n_kerns=(15, 20, 20, 30, 10, 10), batch_size=128):
     """ Demonstrates lenet on MNIST dataset
 
     :type learning_rate: float
@@ -74,7 +74,7 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
     print '... building the model'
     cnn = CNN(rng, x, n_kerns, batch_size)
     # the cost we minimize during training is the NLL of the model
-    cost = cnn.layer6.negative_log_likelihood(y)
+    cost = cnn.layer7.negative_log_likelihood(y)
 
     # create a function to compute the mistakes that are made by the model
     test_model = theano.function(
