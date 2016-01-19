@@ -34,7 +34,7 @@ class CNN(object):
         # 4D output tensor is thus of shape (batch_size, nkerns[1], 60, 60)
         self.layer1_pooling_factor = (2, 2)
         self.layer1_filter_shape = (n_kerns[1], n_kerns[0], 5, 5)
-        self.layer1_input_shape = (batch_size, n_kerns[0], 55, 55)
+        self.layer1_input_shape = (batch_size, n_kerns[0], 56, 56)
         print 'layer 1 input: ', self.layer1_input_shape
         self.layer1 = LeNetConvPoolLayer(
             rng,
@@ -50,7 +50,7 @@ class CNN(object):
         # 4D output tensor is thus of shape (batch_size, nkerns[2], 28, 28)
         self.layer2_pooling_factor = (2, 2)
         self.layer2_filter_shape = (n_kerns[2], n_kerns[1], 3, 3)
-        self.layer2_input_shape = (batch_size, n_kerns[1], 25, 25)
+        self.layer2_input_shape = (batch_size, n_kerns[1], 26, 26)
         print 'layer 2 input: ', self.layer2_input_shape
         self.layer2 = LeNetConvPoolLayer(
             rng,
@@ -66,7 +66,7 @@ class CNN(object):
         # 4D output tensor is thus of shape (batch_size, nkerns[3], 13, 13)
         self.layer3_pooling_factor = (1, 1)
         self.layer3_filter_shape = (n_kerns[3], n_kerns[2], 3, 3)
-        self.layer3_input_shape = (batch_size, n_kerns[2], 11, 11)
+        self.layer3_input_shape = (batch_size, n_kerns[2], 12, 12)
         print 'layer 3 input: ', self.layer3_input_shape
         self.layer3 = LeNetConvPoolLayer(
             rng,
@@ -80,9 +80,9 @@ class CNN(object):
         # filtering reduces the image size to (13-3+1, 13-3+1) = (11, 11)
         # maxpooling reduces this further to (11/2, 11/2) = (5, 5)
         # 4D output tensor is thus of shape (batch_size, nkerns[4], 5, 5)
-        self.layer4_pooling_factor = (2, 2)
+        self.layer4_pooling_factor = (1, 1)
         self.layer4_filter_shape = (n_kerns[4], n_kerns[3], 3, 3)
-        self.layer4_input_shape = (batch_size, n_kerns[3], 9, 9)
+        self.layer4_input_shape = (batch_size, n_kerns[3], 10, 10)
         print 'layer 4 input: ', self.layer4_input_shape
         self.layer4 = LeNetConvPoolLayer(
             rng,
@@ -97,7 +97,7 @@ class CNN(object):
         # This will generate a matrix of shape (batch_size, nkerns[4] * 5 * 5),
         # or (500, 50 * 4 * 4) = (500, 800) with the default values.
         self.layer5_input = self.layer4.output.flatten(2)
-        self.layer5_input_length = n_kerns[4] * 7 * 7
+        self.layer5_input_length = n_kerns[4] * 8 * 8
         self.layer5_output_length = 2048
         print 'layer 5 input: ', self.layer5_input_length
         print 'layer 5 output: ', self.layer5_output_length

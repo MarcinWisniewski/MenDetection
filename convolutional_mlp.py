@@ -20,7 +20,7 @@ from CNN.conv_network import CNN
 
 
 def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20,
-                    n_kerns=(15, 20, 20, 30, 10, 10), batch_size=128):
+                    n_kerns=(15, 20, 20, 30, 10), batch_size=128):
     """ Demonstrates lenet on MNIST dataset
 
     :type learning_rate: float
@@ -44,8 +44,8 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
 
     rng = numpy.random.RandomState(23455)
     dp = DataProvider(
-        input_dir_person='/home/marcin/data/men_detection/men',
-        input_dir_background='/home/marcin/data/men_detection/mountains',
+        input_dir_person='/home/marcinw/data/men_detection/men',
+        input_dir_background='/home/marcinw/data/men_detection/mountains',
         test_percentage_split=2, validate_percentage_split=2, batch=batch_size)
     valid_set_x, valid_set_y = dp.get_validate_images()
     test_set_x, test_set_y = dp.get_testing_images()
