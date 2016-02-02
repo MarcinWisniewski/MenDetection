@@ -7,7 +7,7 @@ class BatchDataProvider(object):
         self.person_first_analysed_element = 0
         self.background_first_analysed_element = 0
         self.batch = batch
-        self.class_percentage_distribution = self._calculate_data_percentage()
+        self.class_ratio = self._calculate_class_ratio()
         self.background_index, self.person_index = self._calculate_classes_cardinality()
         self.number_of_batches = self.person_images_len/self.person_index - 1
 
@@ -35,10 +35,10 @@ class BatchDataProvider(object):
         return (self.person_first_analysed_element+self.person_index < self.person_images_len and
                 self.background_first_analysed_element+self.background_index < self.background_images_len)
 
-    def _calculate_data_percentage(self):
+    def _calculate_class_ratio(self):
         return self.person_images_len/float(self.background_images_len)
 
     def _calculate_classes_cardinality(self):
-        background = round(self.batch/(1+self.class_percentage_distribution))
+        background = round(self.batch / (1 + self.class_ratio))
         person = self.batch - background
         return int(background), int(person)

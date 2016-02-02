@@ -30,9 +30,6 @@ class DataProvider(object):
         training_person_images, training_background_images = self.data_splitter.get_training_set()
         self.batch_data_provider = BatchDataProvider(training_person_images, training_background_images, batch)
 
-    def clear_batch_index(self):
-        self.batch_data_provider.clear_batch_index()
-
     def get_number_of_batches(self):
         return self.batch_data_provider.get_number_of_batches()
 
@@ -58,6 +55,7 @@ class DataProvider(object):
             self.rng.shuffle(images_classes_tuple)
             return zip(*images_classes_tuple)
         else:
+            self.batch_data_provider.clear_batch_index()
             return None, None
 
     def _generate_image_class_tuple(self, background_images, person_images):
@@ -98,10 +96,10 @@ class DataProvider(object):
                 image_rgb[:, :, i] = read_image
             read_image = image_rgb
 
-        read_image = np.asarray(read_image / (256.0, 256.0, 256.0), dtype=theano.config.floatX)
-        mean_image = np.mean(read_image, axis=(0, 1), dtype='float')
-        read_image -= mean_image
-        read_image = read_image.transpose(2, 0, 1)
+        #read_image = np.asarray(read_image / (256.0, 256.0, 256.0), dtype=theano.config.floatX)
+        #mean_image = np.mean(read_image, axis=(0, 1), dtype='float')
+        #read_image -= mean_image
+        #read_image = read_image.transpose(2, 0, 1)
         return read_image
 
     @staticmethod
@@ -116,15 +114,16 @@ class DataProvider(object):
     @staticmethod
     def _generate_subfolder_image_tuple(input_dir):
         subfolders = os.listdir(input_dir)
+        all_files = []
         for folder in subfolders:
             image_files = os.listdir(os.path.join(input_dir, folder))
-            return [(folder, image) for image in image_files]
-
+            all_files += [(folder, image) for image in image_files]
+        return all_files
 
 if __name__ == '__main__':
     dp = DataProvider(
         input_dir='/media/marcin/windows/Downloads/person_detection/ready_img_ext/',
-        test_percentage_split=10, validate_percentage_split=10, batch=1000)
+        test_percentage_split=2, validate_percentage_split=2, batch=100)
     start_timer = timeit.default_timer()
     testing_img = dp.get_testing_images()
     val_imgs = dp.get_validate_images()

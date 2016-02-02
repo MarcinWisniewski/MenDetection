@@ -38,7 +38,7 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
 
     rng = numpy.random.RandomState(23455)
     dp = DataProvider(
-        input_dir_person='/home/marcin/data/men_detection/',
+        input_dir='/media/marcin/windows/Downloads/person_detection/ready_img_ext/',
         test_percentage_split=1, validate_percentage_split=1, batch=500)
     valid_set_x, valid_set_y = dp.get_validate_images()
     test_set_x, test_set_y = dp.get_testing_images()
