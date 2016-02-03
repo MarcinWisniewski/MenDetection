@@ -28,34 +28,40 @@ class DataProvider(object):
                                           validate_percentage_split)
 
         training_person_images, training_background_images = self.data_splitter.get_training_set()
-        self.batch_data_provider = BatchDataProvider(training_person_images, training_background_images, batch)
-
-    def get_number_of_batches(self):
-        return self.batch_data_provider.get_number_of_batches()
-
-    def get_testing_images(self):
         testing_person_images, testing_background_images = self.data_splitter.get_testing_set()
-        images_classes_tuple = self._generate_image_class_tuple(testing_background_images, testing_person_images)
-        images_classes_tuple = self._read_images(images_classes_tuple)
-        self.rng.shuffle(images_classes_tuple)
-        return zip(*images_classes_tuple)
-
-    def get_validate_images(self):
         validate_person_images, validate_background_images = self.data_splitter.get_validation_set()
-        images_classes_tuple = self._generate_image_class_tuple(validate_background_images, validate_person_images)
-        images_classes_tuple = self._read_images(images_classes_tuple)
-        self.rng.shuffle(images_classes_tuple)
-        return zip(*images_classes_tuple)
+
+        self.training_batch_data_provider = BatchDataProvider(training_person_images, training_background_images, batch)
+        self.testing_batch_data_provider = BatchDataProvider(testing_person_images, testing_background_images, batch)
+        self.validate_batch_data_provider = BatchDataProvider(validate_person_images, validate_background_images, batch)
+
+    def get_number_of_training_batches(self):
+        return self.training_batch_data_provider.get_number_of_batches()
+
+    def get_number_of_testing_batches(self):
+        return self.testing_batch_data_provider.get_number_of_batches()
+
+    def get_number_of_validate_batches(self):
+        return self.validate_batch_data_provider.get_number_of_batches()
+
+    def get_batch_testing_images(self):
+        return self._get_image_from_batch_provider(self.testing_batch_data_provider)
+
+    def get_batch_validate_images(self):
+        return self._get_image_from_batch_provider(self.validate_batch_data_provider)
 
     def get_batch_training_images(self):
-        training_person_images, training_background_images = self.batch_data_provider.get_batch_files()
-        if training_person_images is not None and training_background_images is not None:
-            images_classes_tuple = self._generate_image_class_tuple(training_background_images, training_person_images)
+        return self._get_image_from_batch_provider(self.training_batch_data_provider)
+
+    def _get_image_from_batch_provider(self, batch_data_provider):
+        person_images, background_images = batch_data_provider.get_batch_files()
+        if person_images is not None and background_images is not None:
+            images_classes_tuple = self._generate_image_class_tuple(background_images, person_images)
             images_classes_tuple = self._read_images(images_classes_tuple)
             self.rng.shuffle(images_classes_tuple)
             return zip(*images_classes_tuple)
         else:
-            self.batch_data_provider.clear_batch_index()
+            batch_data_provider.clear_batch_index()
             return None, None
 
     def _generate_image_class_tuple(self, background_images, person_images):
@@ -122,11 +128,11 @@ class DataProvider(object):
 
 if __name__ == '__main__':
     dp = DataProvider(
-        input_dir='/media/marcin/windows/Downloads/person_detection/ready_img_ext/',
-        test_percentage_split=2, validate_percentage_split=2, batch=100)
+        input_dir='/home/marcin/data/men_detection',
+        test_percentage_split=0.1, validate_percentage_split=0.1, batch=100)
     start_timer = timeit.default_timer()
-    testing_img = dp.get_testing_images()
-    val_imgs = dp.get_validate_images()
+    testing_img = dp.get_batch_testing_images()
+    val_imgs = dp.get_batch_validate_images()
     stop_timer = timeit.default_timer()
     print stop_timer - start_timer
 
