@@ -9,9 +9,9 @@ class BatchDataProvider(object):
         self.batch = batch
         self.class_ratio = self._calculate_class_ratio()
         self.background_index, self.person_index = self._calculate_classes_cardinality()
-        self.number_of_batches = self.person_images_len/self.person_index - 1
+        self.number_of_batches = self.person_images_len/self.person_index - 2
 
-    def clear_batch_index(self):
+    def _clear_batch_index(self):
         self.person_first_analysed_element = 0
         self.background_first_analysed_element = 0
 
@@ -29,6 +29,7 @@ class BatchDataProvider(object):
             self.background_first_analysed_element += (self.background_index+1)
             return person_batch_images, background_batch_images
         else:
+            self._clear_batch_index()
             return None, None
 
     def _is_batch_out_of_range(self):

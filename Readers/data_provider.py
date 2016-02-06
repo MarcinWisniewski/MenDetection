@@ -61,7 +61,6 @@ class DataProvider(object):
             self.rng.shuffle(images_classes_tuple)
             return zip(*images_classes_tuple)
         else:
-            batch_data_provider.clear_batch_index()
             return None, None
 
     def _generate_image_class_tuple(self, background_images, person_images):
@@ -105,7 +104,7 @@ class DataProvider(object):
         #read_image = np.asarray(read_image / (256.0, 256.0, 256.0), dtype=theano.config.floatX)
         #mean_image = np.mean(read_image, axis=(0, 1), dtype='float')
         #read_image -= mean_image
-        #read_image = read_image.transpose(2, 0, 1)
+        read_image = read_image.transpose(2, 0, 1)
         return read_image
 
     @staticmethod
