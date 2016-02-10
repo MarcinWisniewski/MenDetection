@@ -9,6 +9,7 @@ import theano.tensor as T
 import pickle as cPickle
 from Readers.data_provider import DataProvider
 from CNN.conv_network import CNN
+import lasagne
 
 
 def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20,
@@ -37,31 +38,39 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
     rng = numpy.random.RandomState(23455)
     dp = DataProvider(
         input_dir='/home/marcin/data/men_detection',
-        test_percentage_split=0.1, validate_percentage_split=0.1, batch=128)
+        test_percentage_split=0.1, validate_percentage_split=0.1, batch=batch_size)
 
     # start-snippet-1
     x = T.tensor4('x', dtype=theano.config.floatX)   # the data is presented as rasterized images
-    y = T.vector('y', dtype='int8')  # the labels are presented as 1D vector of
+    y = T.vector('y', dtype='int64')  # the labels are presented as 1D vector of
                                      # [int] labels
 
     ######################
     # BUILD ACTUAL MODEL #
     ######################
     print '... building the model'
-    cnn = CNN(rng, x, n_kerns, batch_size)
-    # the cost we minimize during training is the NLL of the model
-    cost = cnn.layer7.negative_log_likelihood(y)
+    cnn = CNN(rng, x, n_kerns)
+    prediction = lasagne.layers.get_output(cnn.network, deterministic=True)
+    loss = lasagne.objectives.categorical_crossentropy(prediction, y)
+    loss = loss.mean()
+    params = lasagne.layers.get_all_params(cnn.network, trainable=True)
+    updates = lasagne.updates.nesterov_momentum(
+            loss, params, learning_rate=learning_rate, momentum=momentum)
 
-    # create a function to compute the mistakes that are made by the model
-    test_model = theano.function([x, y], cnn.errors(y))
-    validate_model = theano.function([x, y], cnn.errors(y))
+    test_prediction = lasagne.layers.get_output(cnn.network)
+    test_loss = lasagne.objectives.categorical_crossentropy(test_prediction, y)
+    test_loss = test_loss.mean()
+    # As a bonus, also create an expression for the classification accuracy:
+    test_acc = T.mean(T.eq(T.argmax(test_prediction, axis=1), y),
+                      dtype=theano.config.floatX)
 
     # train_model is a function that updates the model parameters by
     # SGD Since this model has many parameters, it would be tedious to
     # manually create an update rule for each model parameter. We thus
     # create the updates list by automatically looping over all
     # (params[i], grads[i]) pairs.
-    train_model = theano.function([x, y], cost, updates=cnn.gradient_updates_momentum(cost,  learning_rate, momentum))
+    train_model = theano.function([x, y], loss, updates=updates)
+    validate_model = theano.function([x, y], [test_loss, test_acc])
 
     ###############
     # TRAIN MODEL #
@@ -96,27 +105,30 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
 
     epoch = 0
     done_looping = False
-    best_cnn = CNN(rng, x, n_kerns, batch_size)
+    best_cnn = CNN(rng, x, n_kerns)
 
     while (epoch < n_epochs) and (not done_looping):
         epoch += 1
+        cost_ij = 0
         for minibatch_index in xrange(n_train_batches):
             batch_train_set_x, batch_train_set_y = dp.get_batch_training_images()
             iter = (epoch - 1) * n_train_batches + minibatch_index
             if iter % 10 == 0:
                 print 'training @ iter = ', iter
             if batch_train_set_x is not None and batch_train_set_y is not None:
-                cost_ij = train_model(batch_train_set_x, batch_train_set_y)
+                cost_ij += train_model(batch_train_set_x, batch_train_set_y)
 
             if (iter + 1) % validation_frequency == 0:
 
                 # compute zero-one loss on validation set
                 validation_losses = []
+                valaidation_acc = []
                 for valid_batch in xrange(n_valid_batches):
                     batch_valid_set_x, batch_valid_set_y = dp.get_batch_validate_images()
                     if batch_valid_set_x is not None and batch_valid_set_y is not None:
-                        validation_losses.append(validate_model(batch_valid_set_x, batch_valid_set_y))
-
+                        err, acc = validate_model(batch_valid_set_x, batch_valid_set_y)
+                        validation_losses.append(err)
+                        valaidation_acc.append(acc)
                 this_validation_loss = numpy.mean(validation_losses)
                 print('epoch %i, minibatch %i/%i, validation error %f %%' %
                       (epoch, minibatch_index + 1, n_train_batches, this_validation_loss * 100.))
@@ -134,12 +146,14 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
 
                     # test it on the test set
                     test_losses = []
+                    test_acc = []
                     for test_batch in xrange(n_test_batches):
                         batch_test_set_x, batch_test_set_y = dp.get_batch_testing_images()
                         if batch_test_set_x is not None and batch_test_set_y is not None:
-                            test_losses.append(test_model(batch_test_set_x, batch_test_set_y))
+                            err, acc = validate_model(batch_test_set_x, batch_test_set_y)
+                            test_losses.append(err)
+                            test_acc.append(acc)
 
-                    test_score = numpy.mean(test_losses)
                     print(('     epoch %i, minibatch %i/%i, test error of '
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,

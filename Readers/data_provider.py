@@ -101,9 +101,9 @@ class DataProvider(object):
                 image_rgb[:, :, i] = read_image
             read_image = image_rgb
 
-        #read_image = np.asarray(read_image / (256.0, 256.0, 256.0), dtype=theano.config.floatX)
-        #mean_image = np.mean(read_image, axis=(0, 1), dtype='float')
-        #read_image -= mean_image
+        read_image = np.asarray(read_image / (256.0, 256.0, 256.0), dtype=theano.config.floatX)
+        mean_image = np.mean(read_image, axis=(0, 1), dtype='float')
+        read_image -= mean_image
         read_image = read_image.transpose(2, 0, 1)
         return read_image
 
