@@ -55,3 +55,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Pycharm stuff
+.idea/
+
+# model data
+./*.bin	

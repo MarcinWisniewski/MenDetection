@@ -35,14 +35,22 @@ class DataSplitter(object):
         self.background_images_length = len(self.background_photos)
 
     def _calculate_indexes(self):
-        self.test_person_images_index = int(self.person_images_length * self.test_percentage_split/100.0)
-        self.test_background_images_index = int(self.background_images_length * self.test_percentage_split/100.0)
-        self.validate_person_images_index = self.test_person_images_index + \
-                                            int(self.person_images_length * self.validate_percentage_split/100.0)
-        self.validate_background_images_index = self.test_background_images_index + \
-                                                int(self.background_images_length * self.validate_percentage_split/100.0)
+        if self.test_percentage_split < 1 and self.validate_percentage_split < 1:
+            self.test_person_images_index = int(self.person_images_length * self.test_percentage_split)
+            self.test_background_images_index = int(self.background_images_length * self.test_percentage_split)
+            self.validate_person_images_index = self.test_person_images_index + \
+                                                int(self.person_images_length * self.validate_percentage_split)
+            self.validate_background_images_index = self.test_background_images_index + \
+                                                int(self.background_images_length *
+                                                    self.validate_percentage_split)
+        else:
+            class_ratio = self.person_images_length/float(self.background_images_length)
+            self.test_background_images_index = round(self.test_percentage_split / (1 + class_ratio))
+            self.test_person_images_index = self.test_percentage_split-self.test_background_images_index
+            self.validate_background_images_index = self.test_background_images_index + \
+                                                    round(self.validate_percentage_split / (1 + class_ratio))
+            self.validate_person_images_index = self.test_person_images_index + \
+                                                self.validate_percentage_split-self.validate_background_images_index
 
 
-if __name__ == '__main__':
-    print 1
 
