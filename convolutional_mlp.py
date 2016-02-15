@@ -12,7 +12,7 @@ from CNN.conv_network import CNN
 import lasagne
 
 
-def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20,
+def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=20,
                     n_kerns=(96, 256, 128, 128, 64), batch_size=128):
     """ Demonstrates lenet on MNIST dataset
 
@@ -35,10 +35,10 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
     actual_time = datetime.datetime.now().time()
     print 'algorithm started at: ', actual_time.isoformat()
 
-    rng = numpy.random.RandomState(23455)
+    rng = numpy.random.RandomState(234555)
     dp = DataProvider(
-        input_dir='/home/marcin/data/men_detection',
-        test_percentage_split=0.1, validate_percentage_split=0.1, batch=batch_size)
+        input_dir='/home/marcinw/data/men_detection',
+        test_percentage_split=0.005, validate_percentage_split=0.005, batch=batch_size)
 
     # start-snippet-1
     x = T.tensor4('x', dtype=theano.config.floatX)   # the data is presented as rasterized images
@@ -86,7 +86,7 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
     n_test_batches = dp.get_number_of_testing_batches()
 
     # early-stopping parameters
-    patience = 1000  # look as this many examples regardless
+    patience = 5000  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is
                            # found
     improvement_threshold = 0.995  # a relative improvement of this much is
@@ -113,11 +113,11 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
         for minibatch_index in xrange(n_train_batches):
             batch_train_set_x, batch_train_set_y = dp.get_batch_training_images()
             iter = (epoch - 1) * n_train_batches + minibatch_index
-            if iter % 10 == 0:
+            if iter % 100 == 0:
                 print 'training @ iter = ', iter
             if batch_train_set_x is not None and batch_train_set_y is not None:
                 cost_ij += train_model(batch_train_set_x, batch_train_set_y)
-
+		
             if (iter + 1) % validation_frequency == 0:
 
                 # compute zero-one loss on validation set
@@ -153,7 +153,7 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
                             err, acc = validate_model(batch_test_set_x, batch_test_set_y)
                             test_losses.append(err)
                             test_acc.append(acc)
-
+			test_score =  numpy.mean(test_losses)
                     print(('     epoch %i, minibatch %i/%i, test error of '
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,
@@ -179,5 +179,5 @@ def start_learning(learning_rate=0.01, momentum=0.9, use_model=True, n_epochs=20
                           ' ran for %.2fm' % ((end_time - start_time) / 60.))
 
 if __name__ == '__main__':
-    start_learning(use_model=False)
+    start_learning(use_model=True)
 

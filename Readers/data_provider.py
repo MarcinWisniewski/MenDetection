@@ -95,11 +95,14 @@ class DataProvider(object):
     @staticmethod
     def _read_and_reshape(path):
         read_image = misc.imread(path)
-        if read_image.shape != _DEFAULT_IMAGE_SIZE:
+	if read_image.shape != _DEFAULT_IMAGE_SIZE:
             image_rgb = np.zeros(_DEFAULT_IMAGE_SIZE, dtype='uint8')
-            for i in xrange(3):
-                image_rgb[:, :, i] = read_image
-            read_image = image_rgb
+	    if read_image.shape == (233, 233):
+            	for i in xrange(3):
+                    image_rgb[:, :, i] = read_image
+            	read_image = image_rgb
+	    else:
+		print path
 
         read_image = np.asarray(read_image / (256.0, 256.0, 256.0), dtype=theano.config.floatX)
         mean_image = np.mean(read_image, axis=(0, 1), dtype='float')
