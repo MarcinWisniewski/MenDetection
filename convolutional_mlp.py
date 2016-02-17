@@ -2,6 +2,7 @@
 import os
 import sys
 import timeit
+import time
 import datetime
 import numpy
 import theano
@@ -39,12 +40,13 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
     dp = DataProvider(
         input_dir='/home/marcinw/data/men_detection',
         test_percentage_split=0.005, validate_percentage_split=0.005, batch=batch_size)
+    print 'number of images', dp.get_number_of_images()
 
     # start-snippet-1
     x = T.tensor4('x', dtype=theano.config.floatX)   # the data is presented as rasterized images
     y = T.vector('y', dtype='int64')  # the labels are presented as 1D vector of
                                      # [int] labels
-
+   
     ######################
     # BUILD ACTUAL MODEL #
     ######################
@@ -86,7 +88,7 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
     n_test_batches = dp.get_number_of_testing_batches()
 
     # early-stopping parameters
-    patience = 5000  # look as this many examples regardless
+    patience = 10000  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is
                            # found
     improvement_threshold = 0.995  # a relative improvement of this much is
@@ -111,13 +113,14 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
         epoch += 1
         cost_ij = 0
         for minibatch_index in xrange(n_train_batches):
-            batch_train_set_x, batch_train_set_y = dp.get_batch_training_images()
+	    batch_train_set_x, batch_train_set_y = dp.get_batch_training_images()
             iter = (epoch - 1) * n_train_batches + minibatch_index
             if iter % 100 == 0:
                 print 'training @ iter = ', iter
+
             if batch_train_set_x is not None and batch_train_set_y is not None:
                 cost_ij += train_model(batch_train_set_x, batch_train_set_y)
-		
+
             if (iter + 1) % validation_frequency == 0:
 
                 # compute zero-one loss on validation set

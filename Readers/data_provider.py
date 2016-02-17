@@ -35,6 +35,9 @@ class DataProvider(object):
         self.testing_batch_data_provider = BatchDataProvider(testing_person_images, testing_background_images, batch)
         self.validate_batch_data_provider = BatchDataProvider(validate_person_images, validate_background_images, batch)
 
+    def get_number_of_images(self):
+	return len(self.person_photos) + len(self.background_photos)
+
     def get_number_of_training_batches(self):
         return self.training_batch_data_provider.get_number_of_batches()
 
@@ -94,7 +97,12 @@ class DataProvider(object):
 
     @staticmethod
     def _read_and_reshape(path):
-        read_image = misc.imread(path)
+	try:
+            read_image = misc.imread(path)
+	except IOError:
+            print 'broken file', path
+            read_image = np.zeros(_DEFAULT_IMAGE_SIZE, dtype='uint8')
+	
 	if read_image.shape != _DEFAULT_IMAGE_SIZE:
             image_rgb = np.zeros(_DEFAULT_IMAGE_SIZE, dtype='uint8')
 	    if read_image.shape == (233, 233):
@@ -102,6 +110,7 @@ class DataProvider(object):
                     image_rgb[:, :, i] = read_image
             	read_image = image_rgb
 	    else:
+		read_image = image_rgb
 		print path
 
         read_image = np.asarray(read_image / (256.0, 256.0, 256.0), dtype=theano.config.floatX)
