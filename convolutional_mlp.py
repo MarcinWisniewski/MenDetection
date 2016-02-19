@@ -158,7 +158,7 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
                             err, acc = validate_model(batch_test_set_x, batch_test_set_y)
                             test_losses.append(err)
                             test_acc.append(acc)
-                    test_score =  numpy.mean(test_losses)
+                    test_score = numpy.mean(test_losses)
                     print(('     epoch %i, minibatch %i/%i, test error of '
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,

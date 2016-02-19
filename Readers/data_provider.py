@@ -111,7 +111,7 @@ class DataProvider(object):
                 read_image = image_rgb
             else:
                 read_image = image_rgb
-            print path
+                print path
 
         read_image = np.asarray(read_image / (256.0, 256.0, 256.0), dtype=theano.config.floatX)
         mean_image = np.mean(read_image, axis=(0, 1), dtype='float')
