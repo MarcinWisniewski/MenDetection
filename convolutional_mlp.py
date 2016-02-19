@@ -113,10 +113,12 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
         epoch += 1
         cost_ij = 0
         for minibatch_index in xrange(n_train_batches):
-	    batch_train_set_x, batch_train_set_y = dp.get_batch_training_images()
+            batch_train_set_x, batch_train_set_y = dp.get_batch_training_images()
             iter = (epoch - 1) * n_train_batches + minibatch_index
+
             if iter % 100 == 0:
                 print 'training @ iter = ', iter
+                print 'cost = ', cost_ij
 
             if batch_train_set_x is not None and batch_train_set_y is not None:
                 cost_ij += train_model(batch_train_set_x, batch_train_set_y)
@@ -156,7 +158,7 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
                             err, acc = validate_model(batch_test_set_x, batch_test_set_y)
                             test_losses.append(err)
                             test_acc.append(acc)
-			test_score =  numpy.mean(test_losses)
+                    test_score =  numpy.mean(test_losses)
                     print(('     epoch %i, minibatch %i/%i, test error of '
                            'best model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,
