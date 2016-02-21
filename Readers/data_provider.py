@@ -15,7 +15,8 @@ class DataProvider(object):
                  input_dir,
                  test_percentage_split,
                  validate_percentage_split,
-                 batch):
+                 batch,
+                 reduce_training_set):
         self.rng = np.random.RandomState(123456)
         self.input_dir_person = os.path.join(input_dir, _CLASS_FOLDER[0])
         self.input_dir_background = os.path.join(input_dir, _CLASS_FOLDER[1])
@@ -25,7 +26,8 @@ class DataProvider(object):
         self.data_splitter = DataSplitter(self.person_photos,
                                           self.background_photos,
                                           test_percentage_split,
-                                          validate_percentage_split)
+                                          validate_percentage_split,
+                                          reduce_training_set)
 
         training_person_images, training_background_images = self.data_splitter.get_training_set()
         testing_person_images, testing_background_images = self.data_splitter.get_testing_set()
@@ -34,9 +36,13 @@ class DataProvider(object):
         self.training_batch_data_provider = BatchDataProvider(training_person_images, training_background_images, batch)
         self.testing_batch_data_provider = BatchDataProvider(testing_person_images, testing_background_images, batch)
         self.validate_batch_data_provider = BatchDataProvider(validate_person_images, validate_background_images, batch)
+        self.train_data_length = len(training_person_images) + len(training_background_images)
 
-    def get_number_of_images(self):
+    def get_number_of_all_images(self):
         return len(self.person_photos) + len(self.background_photos)
+
+    def get_number_of_trainig_images(self):
+        return self.train_data_length
 
     def get_number_of_training_batches(self):
         return self.training_batch_data_provider.get_number_of_batches()

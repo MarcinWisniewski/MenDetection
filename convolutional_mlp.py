@@ -14,7 +14,7 @@ from CNN.conv_network import CNN
 
 
 def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=20,
-                    n_kerns=(96, 256, 128, 128, 64), batch_size=128):
+                    n_kerns=(96, 256, 128, 128, 64), batch_size=128, reduce_training_set=True):
     """
 
     :type learning_rate: float
@@ -35,6 +35,9 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
 
     :type batch_size: int
     :param batch_size: number of examples in minibatch
+
+    :type reduce_training_set: bool
+    :param reduce_training_set: debugging swith, reduce training set to check convergence of CNN
     """
 
     actual_time = datetime.datetime.now().time()
@@ -42,9 +45,12 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
 
     rng = numpy.random.RandomState(234555)
     dp = DataProvider(
-        input_dir='/home/marcinw/data/men_detection',
-        test_percentage_split=0.005, validate_percentage_split=0.005, batch=batch_size)
-    print 'number of images', dp.get_number_of_images()
+        input_dir='/home/marcin/data/men_detection',
+        test_percentage_split=0.005, validate_percentage_split=0.005,
+        batch=batch_size, reduce_training_set=reduce_training_set)
+
+    print 'number of all images - %i' % dp.get_number_of_all_images()
+    print 'number of training images - %i' % dp.get_number_of_trainig_images()
 
     # start-snippet-1
     x = T.tensor4('x', dtype=theano.config.floatX)   # the data is presented as rasterized images
@@ -121,11 +127,10 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
             iter = (epoch - 1) * n_train_batches + minibatch_index
 
             if iter % 100 == 0:
-                print 'training @ iter = ', iter
-                print 'cost = ', cost_ij
+                print 'training @ iter = %d, with cost = %f' % (iter, cost_ij)
 
             if batch_train_set_x is not None and batch_train_set_y is not None:
-                cost_ij += train_model(batch_train_set_x, batch_train_set_y)
+                cost_ij = train_model(batch_train_set_x, batch_train_set_y)
 
             if (iter + 1) % validation_frequency == 0:
 
@@ -140,8 +145,9 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
                         validation_acc.append(acc)
                 this_validation_loss = numpy.mean(validation_losses)
                 mean_validation_acc = numpy.mean(validation_acc)
-                print('epoch %i, minibatch %i/%i, validation error %f %% and accuracy  %f' %
-                      (epoch, minibatch_index + 1, n_train_batches, this_validation_loss * 100., mean_validation_acc))
+                print 'epoch %i, minibatch %i/%i, validation error %f %% and accuracy  %f %%' % \
+                      (epoch, minibatch_index + 1, n_train_batches,
+                       this_validation_loss * 100., mean_validation_acc)
 
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
