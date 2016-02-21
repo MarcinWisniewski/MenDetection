@@ -7,25 +7,28 @@ import datetime
 import numpy
 import theano
 import theano.tensor as T
+import lasagne
 import pickle as cPickle
 from Readers.data_provider import DataProvider
 from CNN.conv_network import CNN
-import lasagne
 
 
 def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=20,
                     n_kerns=(96, 256, 128, 128, 64), batch_size=128):
-    """ Demonstrates lenet on MNIST dataset
+    """
 
     :type learning_rate: float
     :param learning_rate: learning rate used (factor for the stochastic
                           gradient)
 
+    :type momentum: float
+    :param momentum: momentum for CNN
+
+    :type: use_model: bool
+    :param use_model: True if You want to read trained model from to file
+
     :type n_epochs: int
     :param n_epochs: maximal number of epochs to run the optimizer
-
-    :type dataset: string
-    :param dataset: path to the dataset used for training /testing (wfdb here)
 
     :type n_kerns: list of ints
     :param n_kerns: number of kernels on each layer
@@ -33,6 +36,7 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
     :type batch_size: int
     :param batch_size: number of examples in minibatch
     """
+
     actual_time = datetime.datetime.now().time()
     print 'algorithm started at: ', actual_time.isoformat()
 
