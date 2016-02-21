@@ -127,16 +127,17 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
 
                 # compute zero-one loss on validation set
                 validation_losses = []
-                valaidation_acc = []
+                validation_acc = []
                 for valid_batch in xrange(n_valid_batches):
                     batch_valid_set_x, batch_valid_set_y = dp.get_batch_validate_images()
                     if batch_valid_set_x is not None and batch_valid_set_y is not None:
                         err, acc = validate_model(batch_valid_set_x, batch_valid_set_y)
                         validation_losses.append(err)
-                        valaidation_acc.append(acc)
+                        validation_acc.append(acc)
                 this_validation_loss = numpy.mean(validation_losses)
-                print('epoch %i, minibatch %i/%i, validation error %f %%' %
-                      (epoch, minibatch_index + 1, n_train_batches, this_validation_loss * 100.))
+                mean_validation_acc = numpy.mean(validation_acc)
+                print('epoch %i, minibatch %i/%i, validation error %f %% and accuracy  %f' %
+                      (epoch, minibatch_index + 1, n_train_batches, this_validation_loss * 100., mean_validation_acc))
 
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
