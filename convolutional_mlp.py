@@ -13,8 +13,8 @@ from Readers.data_provider import DataProvider
 from CNN.conv_network import CNN
 
 
-def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=20,
-                    n_kerns=(96, 256, 128, 128, 64), batch_size=128, reduce_training_set=True):
+def start_learning(learning_rate=0.001, momentum=0.9, use_model=False, n_epochs=20,
+                    n_kerns=(96, 256, 128, 128, 64), batch_size=128, reduce_training_set=False):
     """
 
     :type learning_rate: float
@@ -37,7 +37,7 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
     :param batch_size: number of examples in minibatch
 
     :type reduce_training_set: bool
-    :param reduce_training_set: debugging swith, reduce training set to check convergence of CNN
+    :param reduce_training_set: debugging switch, reduce training set to check convergence of CNN
     """
 
     actual_time = datetime.datetime.now().time()
@@ -62,14 +62,14 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
     ######################
     print '... building the model'
     cnn = CNN(rng, x, n_kerns)
-    prediction = lasagne.layers.get_output(cnn.network, deterministic=True)
+    prediction = lasagne.layers.get_output(cnn.network)
     loss = lasagne.objectives.categorical_crossentropy(prediction, y)
     loss = loss.mean()
     params = lasagne.layers.get_all_params(cnn.network, trainable=True)
     updates = lasagne.updates.nesterov_momentum(
             loss, params, learning_rate=learning_rate, momentum=momentum)
 
-    test_prediction = lasagne.layers.get_output(cnn.network)
+    test_prediction = lasagne.layers.get_output(cnn.network, deterministic=True)
     test_loss = lasagne.objectives.categorical_crossentropy(test_prediction, y)
     test_loss = test_loss.mean()
     # As a bonus, also create an expression for the classification accuracy:
@@ -133,7 +133,6 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
                 cost_ij = train_model(batch_train_set_x, batch_train_set_y)
 
             if (iter + 1) % validation_frequency == 0:
-
                 # compute zero-one loss on validation set
                 validation_losses = []
                 validation_acc = []
@@ -143,6 +142,7 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
                         err, acc = validate_model(batch_valid_set_x, batch_valid_set_y)
                         validation_losses.append(err)
                         validation_acc.append(acc)
+
                 this_validation_loss = numpy.mean(validation_losses)
                 mean_validation_acc = numpy.mean(validation_acc)
                 print 'epoch %i, minibatch %i/%i, validation error %f %% and accuracy  %f %%' % \
@@ -169,6 +169,7 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
                             err, acc = validate_model(batch_test_set_x, batch_test_set_y)
                             test_losses.append(err)
                             test_acc.append(acc)
+
                     test_score = numpy.mean(test_losses)
                     print(('     epoch %i, minibatch %i/%i, test error of '
                            'best model %f %%') %
@@ -184,6 +185,7 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=True, n_epochs=2
             if patience <= iter:
                 done_looping = True
                 break
+
     end_time = timeit.default_timer()
 
     print('Optimization complete.')
