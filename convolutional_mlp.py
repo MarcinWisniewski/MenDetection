@@ -182,10 +182,6 @@ def start_learning(learning_rate=0.001, momentum=0.9, use_model=False, n_epochs=
                     cPickle.dump(best_cnn.__getstate__(), f, protocol=cPickle.HIGHEST_PROTOCOL)
                     f.close()
 
-            if patience <= iter:
-                done_looping = True
-                break
-
     end_time = timeit.default_timer()
 
     print('Optimization complete.')
