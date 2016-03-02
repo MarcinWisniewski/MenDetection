@@ -55,8 +55,8 @@ def start_testing():
             if predict[prediction_index] > 0.5:
                 ax1.add_patch(patches.Rectangle((x_pixel, y_pixel),
                                                 IMAGE_SIZE, IMAGE_SIZE,
-                                                alpha=predict[prediction_index]-0.49,
-                                                facecolor='red'))
+                                                linewidth=(predict[prediction_index]-0.49)*5.0,
+                                                fill=False))
             prediction_index += 1
 
     plt.show()
